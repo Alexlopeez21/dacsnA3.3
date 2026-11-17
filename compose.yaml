@@ -1,0 +1,12 @@
+services:
+  tienda:
+
+  db:
+
+  correo:
+
+volumes:
+
+
+networks:
+  interna:
