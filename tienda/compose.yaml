@@ -1,0 +1,50 @@
+services:
+  tienda:
+    images: prestashop/prestashop:8.2
+    ports:
+      - "${PUERTO:-8080}:8080"
+    envinronment:
+      - DB_SERVER=db
+      - DB_USER=${DB_USER}
+      - DB_PASSWD=${DB_PASSWD}
+      - PS_INSTALL_AUTO=1
+      - PS_LANGUAGE=es
+      - PS_COUNTRY=ES
+      - PS_DEMO_MODE=1
+      - ADMIN_MAIL=${ADMIN_MAIL}
+      - ADMIN_PASSWD=${ADMIN_PASSWD}
+      - PS_DOMAIN=${DIRECCION:PUERTO}
+      - PS_FOLDER_ADMIN=admin-tienda
+      - PS_FOLDER_INSTALL=install-tienda
+    volumes:
+      - ficherosTienda:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      correo:
+        condition: service_started
+    restarts: unless-stopped
+    
+  db:
+    image:
+    environment:
+    volumes:
+    networks:
+    ports:
+    healthcare:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 10s
+      start_period: 30s
+    restart:
+
+
+  correo:
+    image:
+    environment
+
+volumes:
+  ficherosTienda:
+
+networks:
+  interna:
