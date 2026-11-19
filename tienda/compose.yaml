@@ -1,9 +1,9 @@
 services:
   tienda:
-    images: prestashop/prestashop:8.2
+    image: prestashop/prestashop:8.2
     ports:
-      - "${PUERTO:-8080}:8080"
-    envinronment:
+      - "${PUERTO:-8080}:80"
+    environment:
       - DB_SERVER=db
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
@@ -12,7 +12,7 @@ services:
       - PS_LANGUAGE=es
       - PS_COUNTRY=ES
       - PS_DEMO_MODE=0
-      - PS_DOMAIN=${DIRECCION:PUERTO}
+      - PS_DOMAIN=${DIRECCION}:${PUERTO}
       - PS_FOLDER_ADMIN=admin-tienda
       - PS_FOLDER_INSTALL=install-tienda
       - ADMIN_MAIL=${ADMIN_MAIL}
@@ -34,18 +34,17 @@ services:
       - MARIADB_USER=${DB_USER}
       - MARIADB_PASSWORD=${DB_PASSWD}
       - MARIADB_DATABASE=${DB_NAME}
-      - MARIADB_RANDOM_ROOT=1
+      - MARIADB_RANDOM_ROOT_PASSWORD=1
     volumes:
       - db-volume:/var/lib/mysql
     networks:
       - interna
-    healthcare:
+    healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
-      retries: 10s
+      retries: 10
       start_period: 30s
     restart: unless-stopped
-
 
   correo:
     image: axllent/mailpit:v1.32
@@ -60,12 +59,11 @@ services:
     environment:
       - ADMINER_DEFAULT_SERVER=db
     ports:
-      - "${PUERTO_ADMINER:-8081}:8081"
+      - "${PUERTO_ADMINER:-8081}:8080"
     networks:
       - interna
     profiles: ["herramientas"]
     restart: unless-stopped
-
 
 volumes:
   ficherosTienda:
