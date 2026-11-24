@@ -1,0 +1,55 @@
+services:
+  forgejo:
+  image: codeberg.org/forgejo/forgejo:17
+  ports:
+    - "${PUERTO:-3000}:3000"
+    - "${PUERTO_SSH:-2222}:22"
+  environment:
+    - USER_UID=1000
+    - USER_GRID=1000
+    - FORGEJO__database__DB_TYPE=postgres
+    - FORGEJO__database__HOST=db
+    - FORGEJO__database__NAME=${DB_NAME:-dbname}
+    - FORGEJO__database__USER=${DB_USER:-dbuser}
+    - FORGEJO__database__PASSWD=${DB_PASSWD:?Falta la contraseña en el fichero .env}
+    - FORGEJO__server__DOMAIN=${DIRECCION:?Falta la direccion en el fichero .env}
+    - FORGEJO__server__ROOT_URL=http://${DIRECCION:?Falta la direccion en el fichero .env}:${PUERTO:?Falta el puerto en el fichero .env}
+    - FORGEJO__server__SSH_PORT=${PUERTO_SSH:-2222}:22
+    - FORGEJO__server__SSH_LISTEN_PORT=${PUERTO:-3000}:80
+    - FORGEJO__security__INSTALL_LOCK=true
+    - FORGEJO__mailer__ENABLED=true
+    - FORGEJO__mailer__PROTOCOL=smtp
+    - FORGEJO__mailer__SMTP_ADDR=mailpit
+    - FORGEJO__mailer__SMTP_PORT=1025
+    - FORGEJO__mailer__FROM=forgejo@example.com
+    - FORGEJO__cache__ADAPTER=
+    - FORGEJO__cache__HOST=
+    - FORGEJO__session__PROVIDER=
+    - FORGEJO__session__PROVIDER_CONFIG=
+    - FORGEJO__queue__TYPE=
+    - FORGEJO__queue__CONN_STR=
+  volumes:
+    - volumenForgejo:/data
+  restart: unless-stopped
+
+  db:
+    image: postgres:18.6
+    environment:
+      - POSTGRES_USER=${DB_USER:-dbuser}
+      - POSTGRES_PASSWORD=${DB_PASSWD:?Falta la contraseña en el fichero .env}
+      - POSTGRES_DB=${DB_NAME:-dbname}
+    networks:
+      - forgejo
+    volumes:
+      - volumenDatabase:/var/lib/postgresql/data
+
+  cache:
+
+  correo:
+
+volumes:
+  volumenForgejo:
+  volumenDatabase:
+
+networks:
+  forgejo:

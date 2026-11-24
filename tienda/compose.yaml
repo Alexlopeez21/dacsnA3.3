@@ -5,14 +5,14 @@ services:
       - "${PUERTO:-8080}:80"
     environment:
       - DB_SERVER=db
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWD=${DB_PASSWD}
+      - DB_NAME=${DB_NAME:-dbname}
+      - DB_USER=${DB_USER:-dbuser}
+      - DB_PASSWD=${DB_PASSWD:?Falta la contraseña en el fichero .env}
       - PS_INSTALL_AUTO=1
       - PS_LANGUAGE=es
       - PS_COUNTRY=ES
       - PS_DEMO_MODE=0
-      - PS_DOMAIN=${DIRECCION}:${PUERTO}
+      - PS_DOMAIN=${DIRECCION:?Falta la direccion en el fichero .env}:${PUERTO:?Falta el puerto en el fichero .env}
       - PS_FOLDER_ADMIN=admin-tienda
       - PS_FOLDER_INSTALL=install-tienda
       - ADMIN_MAIL=${ADMIN_MAIL}
@@ -31,9 +31,9 @@ services:
   db:
     image: mariadb:11.8
     environment:
-      - MARIADB_USER=${DB_USER}
-      - MARIADB_PASSWORD=${DB_PASSWD}
-      - MARIADB_DATABASE=${DB_NAME}
+      - MARIADB_USER=${DB_USER:-dbuser}
+      - MARIADB_PASSWORD=${DB_PASSWD:?Falta la contraseña en el fichero .env}
+      - MARIADB_DATABASE=${DB_NAME:-dbname}
       - MARIADB_RANDOM_ROOT_PASSWORD=1
     volumes:
       - db-volume:/var/lib/mysql
