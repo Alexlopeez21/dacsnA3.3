@@ -1,0 +1,60 @@
+services:
+  bd:
+    image: mariadb:11.8
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${MYSQL_DATABASE:-yourls}
+      MARIADB_USER: ${MYSQL_USER:-yourls}
+      MARIADB_PASSWORD: ${MYSQL_PASSWORD:?Falta definir MYSQL_PASSWORD en el fichero .env}
+      MARIADB_RANDOM_ROOT_PASSWORD: "1"
+    volumes:
+      - datos_bd:/var/lib/mysql
+    networks:
+      - interna
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  yourls:
+    image: yourls:1.10.3-fpm
+    restart: unless-stopped
+    depends_on:
+      bd:
+        condition: service_healthy
+    environment:
+      YOURLS_DB_HOST: bd
+      YOURLS_DB_NAME: ${MYSQL_DATABASE:-yourls}
+      YOURLS_DB_USER: ${MYSQL_USER:-yourls}
+      YOURLS_DB_PASS: ${MYSQL_PASSWORD:?Falta definir MYSQL_PASSWORD en el fichero .env}
+      YOURLS_SITE: ${DIRECCION:?Falta definir DIRECCION en el fichero .env}
+      YOURLS_USER: ${YOURLS_USER:-admin}
+      YOURLS_PASS: ${YOURLS_PASS:?Falta definir YOURLS_PASS en el fichero .env}
+    volumes:
+      - codigo:/var/www/html
+    networks:
+      - frontal
+      - interna
+
+  web:
+    image: nginx:1.30
+    restart: unless-stopped
+    depends_on:
+      - yourls
+    ports:
+      - "${PUERTO:-8080}:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - codigo:/var/www/html:ro
+    networks:
+      - frontal
+
+volumes:
+  codigo:
+  datos_bd:
+
+networks:
+  frontal:
+  interna:
